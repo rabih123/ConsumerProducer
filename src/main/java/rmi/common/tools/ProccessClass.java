@@ -1,4 +1,4 @@
-package BasicsProject.Project2.test2;
+package rmi.common.tools;
 
 import java.io.IOException;
 import java.util.ArrayList;
@@ -15,7 +15,7 @@ public class ProccessClass {
 		System.out.println("Starting Process");
 
 		int MAX_CAPACITY = 5;
-		GlobalConstants.langs = TranslateAPI.getLangs();
+		//GlobalConstants.langs = TranslateAPI.getLangs();
 		List<String> trnslQueue = new ArrayList<String>();
 		@SuppressWarnings("rawtypes")
 		Map<String, List> queueList = new HashMap<String, List>();

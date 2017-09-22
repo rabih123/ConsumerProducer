@@ -1,4 +1,4 @@
-package BasicsProject.Project2.test2;
+package rmi.common.tools;
 
 import java.util.List;
 import java.util.logging.Logger;
@@ -82,6 +82,18 @@ public class RedisHandler {
 		try {
 			Jedis j1 = JedisPool.getResource();
 			_Val=j1.lpop(List);
+			j1.close();
+		} catch (Exception e) {
+			LOGGER.warning(e.toString());
+		}
+		return _Val ;
+	}
+	
+	public java.util.List<String> BLPop(int timeOut , String List) {
+		java.util.List<String> _Val = null;
+		try {
+			Jedis j1 = JedisPool.getResource();
+			_Val=j1.blpop(timeOut,List);
 			j1.close();
 		} catch (Exception e) {
 			LOGGER.warning(e.toString());

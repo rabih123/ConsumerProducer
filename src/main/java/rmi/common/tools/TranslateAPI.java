@@ -1,4 +1,4 @@
-package BasicsProject.Project2.test2;
+package rmi.common.tools;
 
 import java.io.BufferedReader;
 import java.io.IOException;
@@ -22,7 +22,7 @@ public class TranslateAPI {
 			InputStream inStream = urlConn.getInputStream();
 			
 			recieved = new BufferedReader(new InputStreamReader(inStream)).readLine();
-			
+			//GlobalConstants.conxLimit--;
 			inStream.close();
 		} catch (Exception e) {
 			e.printStackTrace();

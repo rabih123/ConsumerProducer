@@ -1,4 +1,4 @@
-package BasicsProject.Project2.test2;
+package rmi.common.tools;
 
 import redis.clients.jedis.JedisPool;
 import redis.clients.jedis.JedisPoolConfig;
