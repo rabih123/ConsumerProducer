@@ -16,6 +16,7 @@ public class Worker implements Runnable {
 	private String Transval;
 	private Manager Mangr;
 
+	
 	public Worker(String val, Manager Mangr) {
 		this.val = val;
 		this.Mangr = Mangr;
