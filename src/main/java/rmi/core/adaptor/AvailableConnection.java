@@ -23,5 +23,11 @@ public class AvailableConnection {
 			getInstance().connexLimit = getInstance().connexLimit - val;
 		}
 	}
+	
+	public static void ResetConnection() {
+		synchronized (getInstance()) {
+			getInstance().connexLimit = GlobalConstants.conxLimit;
+		}
+	}
 
 }

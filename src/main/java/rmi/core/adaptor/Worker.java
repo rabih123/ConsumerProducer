@@ -3,7 +3,6 @@ package rmi.core.adaptor;
 import java.io.IOException;
 import java.util.logging.Logger;
 
-import rmi.common.GlobalVariables;
 import rmi.common.tools.GlobalConstants;
 import rmi.common.tools.TranslateAPI;
 import rmi.core.manager.Manager;
@@ -28,7 +27,6 @@ public class Worker implements Runnable {
 
 		try {
 			Transval = TranslateAPI.translate(val, detectLang, "en");
-			GlobalVariables.conxLimit = GlobalVariables.conxLimit - 2;
 			AvailableConnection.DecrementConnex(2);
 			Mangr.setTranslatedVal(val, Transval, detectLang);
 			System.out.println("Available Connection : "

@@ -14,10 +14,10 @@ import java.util.logging.Logger;
 
 import rmi.common.GlobalVariables;
 import rmi.common.properties.AdaptorProperties;
-import rmi.common.properties.ManagerProperties;
 import rmi.common.tools.GlobalConstants;
 import rmi.core.CommonComponent;
 import rmi.core.adaptor.Adaptor;
+import rmi.core.adaptor.AvailableConnection;
 import rmi.core.adaptor.Worker;
 import rmi.core.manager.Manager;
 
@@ -31,8 +31,6 @@ public class AdapterImpl extends UnicastRemoteObject implements Adaptor,
 
 	private static String adpthost;
 	private static int adptPort;
-	private static String mnghost;
-	private static String mngPort;
 	private int adaptorCpunt;
 	private Manager Mangr = null;
 	private ThreadPoolExecutor executor = (ThreadPoolExecutor) Executors
@@ -49,8 +47,6 @@ public class AdapterImpl extends UnicastRemoteObject implements Adaptor,
 	public void loadProperties() {
 		adpthost = AdaptorProperties.getHost();
 		adptPort = Integer.parseInt(AdaptorProperties.getPort()) + adaptorCpunt;
-		mnghost = ManagerProperties.getHost();
-		mngPort = ManagerProperties.getPort();
 	}
 
 	public void init() throws NotBoundException {
@@ -81,8 +77,7 @@ public class AdapterImpl extends UnicastRemoteObject implements Adaptor,
 			@Override
 			public void run() {
 				System.out.println("Refresh Request Capacity");
-				GlobalVariables.conxLimit = GlobalConstants.conxLimit;
-				connectToManager();
+				AvailableConnection.ResetConnection();
 				try {
 					Mangr.notifyMangr();
 				} catch (RemoteException e) {
@@ -99,15 +94,15 @@ public class AdapterImpl extends UnicastRemoteObject implements Adaptor,
 	}
 
 	public void execute(String val) throws RemoteException {
-		connectToManager();
 		executor.submit(new Worker(val, Mangr));
 	}
 
-	private void connectToManager() {
-		if (Mangr == null) {
+	public void connectToManager(String mnghosta,String mngPorta) throws RemoteException {
+
 			try {
-				Mangr = (Manager) Naming.lookup("rmi://" + mnghost + ":"
-						+ mngPort + "/MyServer");
+				LocateRegistry.getRegistry(mnghosta, Integer.parseInt(mngPorta));
+				Mangr = (Manager) Naming.lookup("rmi://" + mnghosta + ":"
+						+ mngPorta + "/MyServer");
 			} catch (MalformedURLException e) {
 				e.printStackTrace();
 				LOGGER.warning(e.toString());
@@ -118,11 +113,10 @@ public class AdapterImpl extends UnicastRemoteObject implements Adaptor,
 				e.printStackTrace();
 				LOGGER.warning(e.toString());
 			}
-		}
+		
 	}
 
 	public int ActiveThread() throws RemoteException {
 		return executor.getActiveCount();
 	}
-
 }

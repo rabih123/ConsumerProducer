@@ -73,7 +73,7 @@ public class ManagerImpl extends UnicastRemoteObject implements
 		}
 
 		connectAdaptors();
-
+		
 		Thread runManager = new Thread(new QueueControllerImpl(this));
 		runManager.start();
 
@@ -133,15 +133,16 @@ public class ManagerImpl extends UnicastRemoteObject implements
 	public void connectAdaptors() {
 		for (AdaptorSettings Adpt : adaptorSettings) {
 		try {
-			
+			    LocateRegistry.getRegistry(Adpt.host, Adpt.port);
 				adaptors.add((Adaptor) Naming.lookup("rmi://" + Adpt.host + ":"
 						+ Adpt.port + "/MyServer"));
+				adaptors.get(adaptors.size()-1).connectToManager(mnghost,mngPort);
 		} catch (NumberFormatException e) {
 			e.printStackTrace();
 			LOGGER.warning(e.toString());
 		} catch (RemoteException e) {
 			System.out.println("Connection to Adaptor On Port :" + Adpt.port + " Is Refused.");
-			LOGGER.warning(e.toString()); 
+			//LOGGER.warning(e.toString()); 
 		} catch (MalformedURLException e) {
 			e.printStackTrace();
 			LOGGER.warning(e.toString());
@@ -151,7 +152,7 @@ public class ManagerImpl extends UnicastRemoteObject implements
 		}
 		}
 	}
-
+	
 	private Adaptor getActiveAdaptor() {
 		for (Adaptor Adpt : adaptors) {
 			try {
