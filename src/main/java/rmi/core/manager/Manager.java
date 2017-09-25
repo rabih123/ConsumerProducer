@@ -9,7 +9,7 @@ public interface Manager extends Remote
 
     void notifyMangr() throws RemoteException;
 
-    void executeJob(String popVal);
+    void executeJob(String popVal) throws RemoteException;
 
-    void connectAdaptors();
+    void connectAdaptors() throws RemoteException;
 }

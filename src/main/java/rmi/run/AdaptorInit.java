@@ -8,7 +8,7 @@ import rmi.core.adaptor.impl.AdapterImpl;
 public class AdaptorInit {
 	public static void main(String[] args) throws NotBoundException {
 		try {
-			new AdapterImpl();
+			new AdapterImpl(0);
 		} catch (RemoteException e) {
 			e.printStackTrace();
 		}
