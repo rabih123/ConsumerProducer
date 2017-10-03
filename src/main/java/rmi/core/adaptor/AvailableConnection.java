@@ -8,7 +8,11 @@ public class AvailableConnection {
 
 	private static AvailableConnection getInstance() {
 		if (availableConnection == null)
-			availableConnection = new AvailableConnection();
+			synchronized (AvailableConnection.class) {
+				if (availableConnection == null) {
+					availableConnection = new AvailableConnection();
+				}
+			}
 		return availableConnection;
 	}
 

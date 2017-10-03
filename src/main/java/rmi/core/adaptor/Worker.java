@@ -28,13 +28,12 @@ public class Worker implements Runnable {
 
 		try {
 			Transval = TranslateAPI.translate(val, detectLang, "en");
-			AvailableConnection.DecrementConnex(2);
 			Mangr.setTranslatedVal(val, Transval, detectLang);
+			AvailableConnection.DecrementConnex(2);
 			System.out.println("Available Connection : "
 					+ AvailableConnection.getConnection());
 			Mangr.notifyMangr();
 		} catch (IOException e) {
-			e.printStackTrace();
 			LOGGER.warning(e.toString());
 		}
 	}

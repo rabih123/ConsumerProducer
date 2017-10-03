@@ -11,7 +11,7 @@ public class BaseProperties {
 
 	public BaseProperties(String path) {
 		try {
-			input = new FileInputStream(System.getProperty("user.dir") + "\\" + path);
+			input = new FileInputStream(System.getProperty("user.dir") + "/" + path);
 			prop.load(input);
 
 		} catch (IOException ex) {

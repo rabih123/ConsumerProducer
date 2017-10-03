@@ -21,17 +21,15 @@ import rmi.core.adaptor.Adaptor;
 import rmi.core.adaptor.AdaptorSettings;
 import rmi.core.manager.Manager;
 
-public class ManagerImpl extends UnicastRemoteObject implements
-		CommonComponent, Manager {
+public class ManagerImpl extends UnicastRemoteObject implements CommonComponent, Manager {
 	private static final long serialVersionUID = 1L;
 
-	private final static Logger LOGGER = Logger
-			.getLogger(GlobalConstants.DEFAULT_LOGGER_NAME);
+	private final static Logger LOGGER = Logger.getLogger(GlobalConstants.DEFAULT_LOGGER_NAME);
 	private static String mnghost;
 	private static String mngPort;
 
-	private static RedisHandler r1 = new RedisHandler(Singleton.getInstance(
-			GlobalConstants.JedisPoolConfig, "localhost"));
+	private static RedisHandler r1 = new RedisHandler(
+			Singleton.getInstance(GlobalConstants.JedisPoolConfig, "localhost"));
 	private List<Adaptor> adaptors = new ArrayList<Adaptor>();
 	private Object lockObject = new Object();
 	private List<AdaptorSettings> adaptorSettings = new ArrayList<AdaptorSettings>();
@@ -48,8 +46,7 @@ public class ManagerImpl extends UnicastRemoteObject implements
 		for (int i = 0; i < 3; i++) {
 			adaptorSettings.add(new AdaptorSettings());
 			adaptorSettings.get(i).host = AdaptorProperties.getHost();
-			adaptorSettings.get(i).port = Integer.parseInt(AdaptorProperties
-					.getPort()) + i;
+			adaptorSettings.get(i).port = Integer.parseInt(AdaptorProperties.getPort()) + i;
 		}
 	}
 
@@ -62,31 +59,26 @@ public class ManagerImpl extends UnicastRemoteObject implements
 			Naming.rebind("//" + mnghost + ":" + mngPort + "/MyServer", this);
 
 		} catch (NumberFormatException e) {
-			e.printStackTrace();
 			LOGGER.warning(e.toString());
 		} catch (RemoteException e) {
-			e.printStackTrace();
 			LOGGER.warning(e.toString());
 		} catch (MalformedURLException e) {
-			e.printStackTrace();
 			LOGGER.warning(e.toString());
 		}
 
 		connectAdaptors();
-		
+
 		Thread runManager = new Thread(new QueueControllerImpl(this));
 		runManager.start();
 
 		System.out.println("Starting Process");
 	}
 
-	public void setTranslatedVal(String val, String transVal, String language)
-			throws RemoteException {
+	public void setTranslatedVal(String val, String transVal, String language) throws RemoteException {
 		r1.LPush("QuTranslated", transVal);
 		Locale loc = new Locale(language);
 		System.out.println("language : " + loc.getDisplayLanguage(loc));
-		System.out.println("Value translated From  : " + val + " to "
-				+ transVal);
+		System.out.println("Value translated From  : " + val + " to " + transVal);
 	}
 
 	public void notifyMangr() throws RemoteException {
@@ -100,23 +92,19 @@ public class ManagerImpl extends UnicastRemoteObject implements
 		synchronized (lockObject) {
 			try {
 
-				while (getActiveAdaptor() == null
-						|| runingAdaptor.conxLimit() <= 0) {
+				while (getActiveAdaptor() == null || (runingAdaptor != null && runingAdaptor.conxLimit() <= 0)) {
 					try {
-						if (runingAdaptor.conxLimit() <= 0) {
-							System.out
-									.println("Connection reached the Maximun");
-						} else {
+						if (runingAdaptor == null) {
 							System.out.println("No Workers Available");
+						} else {
+							System.out.println("Connection reached the Maximun");
 						}
 						lockObject.wait();
 					} catch (InterruptedException e) {
-						e.printStackTrace();
 						LOGGER.warning(e.toString());
 					}
 				}
 			} catch (RemoteException e) {
-				e.printStackTrace();
 				LOGGER.warning(e.toString());
 			}
 		}
@@ -124,49 +112,40 @@ public class ManagerImpl extends UnicastRemoteObject implements
 			System.out.println("Value Produced from Queue : " + popVal);
 			runingAdaptor.execute(popVal);
 		} catch (RemoteException e) {
-			e.printStackTrace();
 			LOGGER.warning(e.toString());
 		}
 
 	}
 
 	public void connectAdaptors() {
-		for (AdaptorSettings Adpt : adaptorSettings) {
-		try {
-			    LocateRegistry.getRegistry(Adpt.host, Adpt.port);
-				adaptors.add((Adaptor) Naming.lookup("rmi://" + Adpt.host + ":"
-						+ Adpt.port + "/MyServer"));
-				adaptors.get(adaptors.size()-1).connectToManager(mnghost,mngPort);
-		} catch (NumberFormatException e) {
-			e.printStackTrace();
-			LOGGER.warning(e.toString());
-		} catch (RemoteException e) {
-			System.out.println("Connection to Adaptor On Port :" + Adpt.port + " Is Refused.");
-			//LOGGER.warning(e.toString()); 
-		} catch (MalformedURLException e) {
-			e.printStackTrace();
-			LOGGER.warning(e.toString());
-		} catch (NotBoundException e) {
-			e.printStackTrace();
-			LOGGER.warning(e.toString());
-		}
-		}
-	}
-	
-	private Adaptor getActiveAdaptor() {
-		for (Adaptor Adpt : adaptors) {
+		adaptorSettings.forEach(adptSett -> {
 			try {
-				if (Adpt.ActiveThread() < 3) {
-					System.out.println("1");
-					runingAdaptor = Adpt;
-					return Adpt;
-				}
+				LocateRegistry.getRegistry(adptSett.host, adptSett.port);
+				adaptors.add((Adaptor) Naming.lookup("rmi://" + adptSett.host + ":" + adptSett.port + "/MyServer"));
+				adaptors.get(adaptors.size() - 1).setupManagerAdapterConx(mnghost, mngPort);
+			} catch (NumberFormatException e) {
+				LOGGER.warning(e.toString());
 			} catch (RemoteException e) {
-				e.printStackTrace();
+				System.out.println("Connection to Adaptor On Port :" + adptSett.port + " Is Refused.");
+			} catch (MalformedURLException e) {
+				LOGGER.warning(e.toString());
+			} catch (NotBoundException e) {
 				LOGGER.warning(e.toString());
 			}
+		});
+	}
 
-		}
-		return null;
+	private Adaptor getActiveAdaptor() throws RemoteException {
+		runingAdaptor = null;
+		adaptors.forEach(adpt -> {
+			try {
+				if (adpt.ActiveThread() < 3) {
+					runingAdaptor = adpt;
+				}
+			} catch (RemoteException e) {
+				LOGGER.warning(e.toString());
+			}
+		});
+		return runingAdaptor;
 	}
 }

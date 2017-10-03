@@ -12,7 +12,6 @@ import java.util.concurrent.Executors;
 import java.util.concurrent.ThreadPoolExecutor;
 import java.util.logging.Logger;
 
-import rmi.common.GlobalVariables;
 import rmi.common.properties.AdaptorProperties;
 import rmi.common.tools.GlobalConstants;
 import rmi.core.CommonComponent;
@@ -58,13 +57,10 @@ public class AdapterImpl extends UnicastRemoteObject implements Adaptor,
 			System.out.println("Server-Side Ready on Port :" + adptPort);
 
 		} catch (NumberFormatException e) {
-			e.printStackTrace();
 			LOGGER.warning(e.toString());
 		} catch (RemoteException e) {
-			e.printStackTrace();
 			LOGGER.warning(e.toString());
 		} catch (MalformedURLException e) {
-			e.printStackTrace();
 			LOGGER.warning(e.toString());
 		}
 
@@ -81,7 +77,6 @@ public class AdapterImpl extends UnicastRemoteObject implements Adaptor,
 				try {
 					Mangr.notifyMangr();
 				} catch (RemoteException e) {
-					e.printStackTrace();
 					LOGGER.warning(e.toString());
 				}
 			}
@@ -90,27 +85,24 @@ public class AdapterImpl extends UnicastRemoteObject implements Adaptor,
 	}
 
 	public int conxLimit() {
-		return GlobalVariables.conxLimit;
+		return AvailableConnection.getConnection();
 	}
 
 	public void execute(String val) throws RemoteException {
 		executor.submit(new Worker(val, Mangr));
 	}
 
-	public void connectToManager(String mnghosta,String mngPorta) throws RemoteException {
+	public void setupManagerAdapterConx(String mnghost,String mngPort) throws RemoteException {
 
 			try {
-				LocateRegistry.getRegistry(mnghosta, Integer.parseInt(mngPorta));
-				Mangr = (Manager) Naming.lookup("rmi://" + mnghosta + ":"
-						+ mngPorta + "/MyServer");
+				LocateRegistry.getRegistry(mnghost, Integer.parseInt(mngPort));
+				Mangr = (Manager) Naming.lookup("rmi://" + mnghost + ":"
+						+ mngPort + "/MyServer");
 			} catch (MalformedURLException e) {
-				e.printStackTrace();
 				LOGGER.warning(e.toString());
 			} catch (NotBoundException e) {
-				e.printStackTrace();
 				LOGGER.warning(e.toString());
 			} catch (RemoteException e) {
-				e.printStackTrace();
 				LOGGER.warning(e.toString());
 			}
 		

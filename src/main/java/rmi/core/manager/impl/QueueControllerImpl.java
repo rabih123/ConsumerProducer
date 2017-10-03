@@ -36,7 +36,6 @@ public class QueueControllerImpl implements Runnable, CommonComponent {
 				try {
 					this.manager.executeJob(popVal);
 				} catch (RemoteException e) {
-					e.printStackTrace();
 					LOGGER.warning(e.toString());
 				}
 			}
